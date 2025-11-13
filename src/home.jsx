@@ -5,6 +5,9 @@ import './home.css';
 const modules = import.meta.glob('./assets/showcase*.png', { eager: true });
 const showcaseImages = Object.values(modules).map((m) => m.default || m);
 
+const DISTANCE_THRESHOLD = 150;
+const DISPLAY_TIME = 900;
+
 function Home() {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [activeShowcases, setActiveShowcases] = useState([]);
@@ -23,23 +26,32 @@ function Home() {
       const delta = Math.sqrt(dx * dx + dy * dy);
       distance.current += delta;
 
-      if (distance.current >=150 && showcaseImages.length > 0) {
+      if (distance.current >= DISTANCE_THRESHOLD && showcaseImages.length > 0) {
         const imgSrc = showcaseImages[showcaseIndex.current % showcaseImages.length];
-        const newShowcase = {
-          id: showcaseIndex.current,
-          src: imgSrc,
-          x: e.clientX,
-          y: e.clientY,
-        };
+        const id = showcaseIndex.current;
+        showcaseIndex.current++;
+
+        const newShowcase = { id, src: imgSrc, x: e.clientX, y: e.clientY, visible: false };
         setActiveShowcases((prev) => [...prev, newShowcase]);
 
         setTimeout(() => {
           setActiveShowcases((prev) =>
-            prev.filter((s) => s.id !== newShowcase.id)
+            prev.map((s) => (s.id === id ? { ...s, visible: true } : s))
           );
-        }, 1000);
+        }, 10);
 
-        showcaseIndex.current++;
+        setTimeout(() => {
+          setActiveShowcases((prev) =>
+            prev.map((s) => (s.id === id ? { ...s, visible: false } : s))
+          );
+        }, DISPLAY_TIME - 300);
+
+        setTimeout(() => {
+          setActiveShowcases((prev) =>
+            prev.filter((s) => s.id !== id)
+          );
+        }, DISPLAY_TIME);
+
         distance.current = 0;
       }
 
@@ -82,7 +94,7 @@ function Home() {
           key={s.id}
           src={s.src}
           alt="showcase"
-          className="showcase"
+          className={`showcase ${s.visible ? 'visible' : ''}`}
           style={{
             left: s.x,
             top: s.y,

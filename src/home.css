@@ -30,9 +30,15 @@
 
 .showcase {
   position: fixed;
-  width: 250px;
-  height: 250px;
+  width: 400px;
   pointer-events: none;
-  transform: translate(-50%, -50%);
-  transition: opacity 0.3s ease;
+  transform: translate(-50%, -50%) scale(0.5);
+  transform-origin: center center;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.showcase.visible {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
 }
